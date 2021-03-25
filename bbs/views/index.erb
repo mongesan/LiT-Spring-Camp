@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  
+  <meta charset="UTF-8">
+  <title>きのたけBBS</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link rel="icon" href="../favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap" rel="stylesheet">
+  
+  <script src="../Chart.min.js"></script>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row d-flex justify-content-center">
+  
+    <div class="card col-lg-6 mt-2 mb-3" style="user-select: none;">
+      <div class="card-body">
+        <h1><span style="color: brown;">きのこ</span><span style="color: green;">たけのこ</span>論争BBS</h1>
+        <h6>by <span style="color: blue">さかも</span>[みんはや/D班]</h6>
+      </div>
+    </div>
+  
+    <div class="card col-lg-6 mb-2 mx-5" style="user-select: none;">
+      <div class="card-body">
+        <div class="vote">
+          <p>VOTE STATUS</p>
+          <p>
+            <span style="color: brown;">A</span>
+            <span style="color: green;">L</span>
+            <span style="color: grey;">L</span>:<%= Contribution.count%><br>
+            <div class="chart">
+              <canvas id="graph"></canvas>
+            </div>
+          </p>
+          <p>↓投票よろしくお願いします↓</p>
+          <form action="/new" method="post" enctype="multipart/form-data">
+            <input type="radio" name="vote" value="M"><span style="color: brown;">きのこの山派</span>
+            <input type="radio" name="vote" value="B"><span style="color: green;">たけのこの里派</span>
+            </div>
+            <p>NICKNAME:<input type="text" name="user_name" class="form-control" placeholder="ニックネーム"></p>
+            <p>COMMENT:<textarea type="text" name="body" class="form-control" placeholder="コメントはこちらにどうぞ"></textarea></p>
+            <p><input type="file" name="file" class="form-control-file"></p>
+            <p><input type="submit" value="POST" class="btn btn-dark" style="float: right;"/></p>
+          </form>
+        </div>
+      </div>
+      <% @contents.each do |content| %>
+      <div class="card col-lg-6 mb-2 mx-5" id="post<%= content.id %>">
+        <div class="card-body">
+          <% if content.vote == "M" %>
+            <p style="color: brown;">
+            きのこの山派<br>
+          <%= content.id %>.<%= content.name%>
+            </p>
+          <% elsif content.vote == "B" %>
+            <p style="color: green;">
+            たけのこの里派<br>
+          <%= content.id %>.<%= content.name%>
+            </p>
+          <% else %>
+            回答なし<br>
+          <%= content.id %>.<%= content.name%>
+          <% end %>
+          <p><%= content.body.gsub(/\n/, '<br/>') %></p>
+          <% unless content.img.empty? %>
+            <p><img class="img-fluid rounded" src="<%= content.img %>"></p>
+          <% end %>
+          <div class="d-flex justify-content-end align-items-center mt-3">
+            <span><%= content.good %></span>
+            <form action="/good/<%= content.id %>" method="post">
+            <input style="color: pink;" type="submit" value="❤" class="btn card-footer-text"> 
+          </form>
+          <form action="/delete/<%= content.id %>" method="post">
+            <input type="submit" value="DELETE" class="btn card-footer-text">
+          </form>
+        <a href="/edit/<%= content.id %>" class="btn card-footer-text">EDIT</a>
+        </div>
+      </div>
+    </div>
+  <% end %>
+  </div>
+  </div>
+  
+  <!--円グラフスクリプト-->
+  <script>
+    ctx = document.getElementById("graph");
+    ctx.width = 350;
+    clr = []
+    var price = [], colors = ['brown', 'green', 'grey'], labels = ["きのこの山派","たけのこの里派","回答なし"];
+    price.push(<%= Contribution.where(vote: "M").count%>)
+    price.push(<%= Contribution.where(vote: "B").count%>)
+    price.push(<%= Contribution.where(vote: nil).count%>)
+    var data = {
+      labels: labels,
+      datasets:[
+        {
+          data: price,
+          backgroundColor: colors
+        }]
+    };
+    var myDoughnut = new Chart(ctx, {
+      type: 'doughnut',
+      data: data,
+      options: {
+          
+          responsive: false
+        }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+body{
+    font-family: 'Dela Gothic One', cursive;
+}
+
+#graph{
+    margin: 0 auto;
+}
+
+
+.vote{
+    text-align: center;
+}
